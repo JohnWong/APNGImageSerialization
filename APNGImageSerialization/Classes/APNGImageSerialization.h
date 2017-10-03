@@ -45,43 +45,6 @@ UIKIT_EXTERN __attribute((overloadable)) UIImage * _Nullable UIAnimatedImageWith
 UIKIT_EXTERN __attribute((overloadable)) UIImage * _Nullable UIAnimatedImageWithAPNGData(NSData *data, NSTimeInterval duration);
 UIKIT_EXTERN __attribute((overloadable)) UIImage * _Nullable UIAnimatedImageWithAPNGData(NSData *data, NSTimeInterval duration, CGFloat scale, NSError *  __nullable __autoreleasing * error);
 
-
-/**
- *  return animated image as APNG format data, if image has only one frame, return as PNG
- */
-UIKIT_EXTERN __attribute((overloadable)) NSData * __nullable UIImageAPNGRepresentation(UIImage * image);
-/**
- *
- *
- *  @param image The animated image
- *  @param compressionQuality range form 0.0 ~ 1.0, while 0 mean max compression, it will cost more memory and return less data
- *
- *  @return <#return value description#>
- */
-UIKIT_EXTERN __attribute((overloadable)) NSData * __nullable UIImageAPNGRepresentation(UIImage * image, CGFloat compressionQuality);
-
-
-@interface APNGImageSerialization : NSObject
-
-+ (NSData * __nullable)dataWithAnimatedImage:(UIImage *)image
-                                       error:(NSError * __nullable __autoreleasing * )error;
-
-+ (NSData * __nullable)dataWithImages:(NSArray <UIImage *> *)images
-                             duration:(NSTimeInterval)duration
-                                error:(NSError * __nullable __autoreleasing *)error;
-
-+ (NSData * __nullable)dataWithImages:(NSArray <UIImage *> *)images
-                             duration:(NSTimeInterval)duration
-                          repeatCount:(NSInteger)repeatCount
-                                error:(NSError * __nullable __autoreleasing *)error;
-
-+ (NSData * __nullable)dataWithImages:(NSArray <UIImage *> *)images
-                             duration:(NSTimeInterval)duration
-                          repeatCount:(NSInteger)repeatCount
-                              quality:(CGFloat)quality
-                                error:(NSError * __nullable __autoreleasing *)error;
-@end
-
 @interface UIImage (Animated_PNG)
 
 /**

@@ -139,22 +139,6 @@ __attribute((overloadable)) UIImage * UIAnimatedImageWithAPNGData(NSData *data, 
     return resultImage;
 }
 
-
-
-__attribute((overloadable)) NSData * __nullable UIImageAPNGRepresentation(UIImage * __nonnull image) {
-    return [APNGImageSerialization dataWithAnimatedImage:image
-                                                   error:NULL];
-}
-
-__attribute((overloadable)) NSData * __nullable UIImageAPNGRepresentation(UIImage * __nonnull image, CGFloat compressionQuality) {
-    return [APNGImageSerialization dataWithImages:image.images ?: @[image]
-                                         duration:image.duration
-                                      repeatCount:0
-                                          quality:compressionQuality
-                                            error:NULL];
-}
-
-
 static NSString *APNGImageNameOfScale(NSString *name, CGFloat scale) {
     int ratio = (int)scale;
     if (scale > 1) {
@@ -162,91 +146,6 @@ static NSString *APNGImageNameOfScale(NSString *name, CGFloat scale) {
     }
     return name.stringByDeletingPathExtension;
 }
-
-
-@implementation APNGImageSerialization
-
-+ (NSData *)dataWithAnimatedImage:(UIImage *)image
-                            error:(NSError * __autoreleasing *)error
-{
-    if (image.images.count > 1) {
-        return [self dataWithImages:image.images
-                           duration:image.duration
-                              error:error];
-    }
-    else {
-        return UIImagePNGRepresentation(image.images.firstObject ?: image);
-    }
-}
-
-+ (NSData *)dataWithImages:(NSArray<UIImage *> *)images
-                  duration:(NSTimeInterval)duration
-               repeatCount:(NSInteger)repeatCount
-                     error:(NSError *__autoreleasing *)error
-{
-    return [self dataWithImages:images
-                       duration:duration
-                    repeatCount:repeatCount
-                        quality:.8f
-                          error:error];
-}
-
-+ (NSData *)dataWithImages:(NSArray<UIImage *> *)images
-                  duration:(NSTimeInterval)duration
-                     error:(NSError *__autoreleasing *)error
-{
-    return [self dataWithImages:images duration:duration repeatCount:0 error:error];
-}
-
-+ (NSData *)dataWithImages:(NSArray<UIImage *> *)images
-                  duration:(NSTimeInterval)duration
-               repeatCount:(NSInteger)repeatCount
-                   quality:(CGFloat)quality
-                     error:(NSError *__autoreleasing *)error
-{
-    if (images.count > 1) {
-        NSMutableData *imageData = [NSMutableData data];
-        CGImageDestinationRef targetImage = CGImageDestinationCreateWithData((__bridge CFMutableDataRef)imageData, kUTTypePNG, images.count, NULL);
-        if (!targetImage) {
-            if (error) {
-                *error = [NSError errorWithDomain:APNGImageErrorDomain
-                                             code:APNGErrorCodeFailToCreate
-                                         userInfo:@{NSLocalizedDescriptionKey: @"Fail to create image"}];
-            }
-            return nil;
-        }
-        NSTimeInterval delay = duration / images.count;
-        [images enumerateObjectsUsingBlock:^(UIImage * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-            CGImageDestinationAddImage(targetImage, obj.CGImage, (__bridge CFDictionaryRef)@{(__bridge NSString *)kCGImagePropertyPNGDictionary: @{(__bridge NSString *)kCGImagePropertyAPNGDelayTime: @(delay)}});
-        }];
-        CGImageDestinationSetProperties(targetImage, (__bridge CFDictionaryRef)@{(__bridge NSString *)kCGImagePropertyPNGDictionary: @{(__bridge NSString *)kCGImagePropertyAPNGLoopCount: @(repeatCount)},
-                                                                                 (__bridge NSString *)kCGImageDestinationLossyCompressionQuality: @(quality)});
-        if (!CGImageDestinationFinalize(targetImage)) {
-            imageData = nil;
-            
-            if (error) {
-                *error = [NSError errorWithDomain:APNGImageErrorDomain
-                                             code:APNGErrorCodeFailToFinalize
-                                         userInfo:@{NSLocalizedDescriptionKey: @"Fail to finalize image!"}];
-            }
-        }
-        CFRelease(targetImage);
-        
-        return [imageData copy];
-    }
-    else if (images.count == 1) {
-        return UIImagePNGRepresentation(images.firstObject);
-    }
-    else if (error) {
-        *error = [NSError errorWithDomain:APNGImageErrorDomain
-                                     code:APNGErrorCodeNoEnoughData
-                                 userInfo:@{NSLocalizedDescriptionKey: @"At least 1 image"}];
-    }
-    return nil;
-}
-
-@end
-
 
 @implementation UIImage (Animated_PNG)
 
